@@ -47,5 +47,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Necesitamos acceso a la galeria para poder subir fotos</string>
+
+	<key>NSCameraUsageDescription</key>
+	<string>Necesitamos poder tomar fotos de los productos con la cámara</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>En caso de subir videos, necesitamos acceso al micrófono</string>
 </dict>
 </plist>
