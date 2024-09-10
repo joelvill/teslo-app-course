@@ -4,16 +4,24 @@ import 'package:formz/formz.dart';
 import '../../../../../config/config.dart';
 import '../../../../shared/infrastructure/inputs/inputs.dart';
 import '../../../domain/domain.dart';
+import '../providers.dart';
 
 final productFormProvider = StateNotifierProvider.autoDispose
     .family<ProductFormNotifier, ProductFormState, Product>(
   (ref, product) {
-    return ProductFormNotifier(product: product);
+    // final createUpdateCallback =
+    //     ref.watch(productsRepositoryProvider).createUpdateProduct;
+    final createUpdateCallback =
+        ref.watch(productsNotifier.notifier).createOrUpdateProduct;
+
+    return ProductFormNotifier(
+        product: product, onSubmitCallback: createUpdateCallback);
   },
 );
 
 class ProductFormNotifier extends StateNotifier<ProductFormState> {
-  final void Function(Map<String, dynamic>)? onSubmitCallback;
+  final Future<bool> Function(Map<String, dynamic> productLike)?
+      onSubmitCallback;
 
   ProductFormNotifier({this.onSubmitCallback, required Product product})
       : super(
@@ -41,7 +49,7 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
     if (onSubmitCallback == null) return false;
 
     final productLike = {
-      'id': state.id,
+      'id': (state.id == 'new' || state.id == '') ? null : state.id,
       'title': state.title.value,
       'slug': state.slug.value,
       'price': state.price.value,
@@ -58,7 +66,11 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
           .toList(),
     };
 
-    return true;
+    try {
+      return await onSubmitCallback!(productLike);
+    } catch (e) {
+      return false;
+    }
   }
 
   void _touchedEverything() {

@@ -44,6 +44,32 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
       isLastPage: false,
     );
   }
+
+  Future<bool> createOrUpdateProduct(Map<String, dynamic> productLike) async {
+    try {
+      final product = await productsRepository.createUpdateProduct(productLike);
+      final isProductInList = state.products.any((p) => p.id == product.id);
+
+      if (!isProductInList) {
+        state = state.copyWith(
+          products: [...state.products, product],
+        );
+        return true;
+      }
+
+      state = state.copyWith(
+        products: state.products.map((p) {
+          if (p.id == product.id) {
+            return product;
+          }
+          return p;
+        }).toList(),
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 /// Estado que contiene los datos relacionados con los productos y la paginación

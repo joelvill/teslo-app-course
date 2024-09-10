@@ -14,24 +14,48 @@ class ProductScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final productState = ref.watch(productProvider(productId));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar producto'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.camera_alt_outlined),
-          ),
-        ],
-      ),
-      body: productState.isLoading
-          ? const FullScreenLoader()
-          : _ProductView(product: productState.product!),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(
-          Icons.save_as_outlined,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Editar producto'),
+          actions: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.camera_alt_outlined),
+            ),
+          ],
         ),
+        body: productState.isLoading
+            ? const FullScreenLoader()
+            : _ProductView(product: productState.product!),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            if (productState.product == null) return;
+
+            await ref
+                .read(productFormProvider(productState.product!).notifier)
+                .onFormSubmit()
+                .then((value) {
+              print(value);
+              if (!value) return;
+              showSnackBar(context);
+            });
+          },
+          child: const Icon(
+            Icons.save_as_outlined,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Producto actualizado'),
       ),
     );
   }
@@ -186,6 +210,7 @@ class _SizeSelector extends StatelessWidget {
       }).toList(),
       selected: Set.from(selectedSizes),
       onSelectionChanged: (newSelection) {
+        FocusScope.of(context).unfocus();
         onSizesChanged(List.from(newSelection));
       },
       multiSelectionEnabled: true,
@@ -224,6 +249,7 @@ class _GenderSelector extends StatelessWidget {
         }).toList(),
         selected: {selectedGender},
         onSelectionChanged: (newSelection) {
+          FocusScope.of(context).unfocus();
           onGenderChanged(newSelection.first);
         },
       ),
