@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../../config/config.dart';
 import '../../domain/domain.dart';
+import '../errors/product_error.dart';
 import '../mappers/product_mapper.dart';
 
 class ProductsDataSourceImpl implements ProductsDataSource {
@@ -37,9 +38,19 @@ class ProductsDataSourceImpl implements ProductsDataSource {
   }
 
   @override
-  Future<Product> getProductById(String id) {
-    // TODO: implement getProductById
-    throw UnimplementedError();
+  Future<Product> getProductById(String id) async {
+    try {
+      final response = await dio.get('/products/$id');
+      final product = ProductMapper.jsonToEntity(response.data);
+      return product;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        throw ProductoNotFound();
+      }
+      throw Exception();
+    } catch (e) {
+      throw Exception();
+    }
   }
 
   @override
